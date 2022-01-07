@@ -77,7 +77,7 @@ cd ..
 
 # install CoppeliaSim Edu 4.1.0 18.04
 wget -nc -c  wget -c https://www.coppeliarobotics.com/files/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz -O CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
-tar -xf --skip-old-files CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
+tar -x -k -f CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
 
 mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ -DCOPPELIASIM_FOLDER=$evorl_gecco_2021_dir/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04 -DLIMBO_FOLDER=$evorl_gecco_2021_dir/modules/limbo ..
