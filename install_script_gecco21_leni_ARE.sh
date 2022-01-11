@@ -3,7 +3,11 @@ git clone https://EtorArzaBCAM@bitbucket.org/autonomousroboticsevolution/evorl_g
 cd evorl_gecco_2021
 
 
-sudo apt install libboost-all-dev libeigen3-dev 
+echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
+curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+sudo apt update
+sudo apt install libzmq3-dev
+sudo apt install libboost-all-dev libeigen3-dev libzmq3-dev
 
 
 evorl_gecco_2021_dir=`pwd`
