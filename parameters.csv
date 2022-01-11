@@ -51,7 +51,7 @@
 #jointControllerType,int,2
 ,,
 #populationSize,int,10
-#maxEvalTime,float,60
+#maxEvalTime,float,1
 #timeStep,float,0.1
 #numberOfGeneration,int,10
 #fitnessType,int,0
