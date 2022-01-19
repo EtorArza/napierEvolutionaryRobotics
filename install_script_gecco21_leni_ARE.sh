@@ -3,11 +3,12 @@ git clone https://EtorArzaBCAM@bitbucket.org/autonomousroboticsevolution/evorl_g
 cd evorl_gecco_2021
 
 
-echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
-curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
-sudo apt update
-sudo apt install libzmq3-dev
-sudo apt install libboost-all-dev libeigen3-dev libzmq3-dev
+# # Install deb packages
+# echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
+# curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+# sudo apt update
+# sudo apt install libzmq3-dev
+# sudo apt install libboost-all-dev libeigen3-dev libzmq3-dev
 
 
 evorl_gecco_2021_dir=`pwd`
@@ -66,6 +67,15 @@ make
 sudo make install
 
 
+cd ~/Downloads
+git clone https://github.com/opencv/opencv.git
+cd opencv
+mkdir -p build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local  ..
+make 
+sudo make install
+
+
 
 cd $evorl_gecco_2021_dir
 cd modules
@@ -74,7 +84,13 @@ git clone https://github.com/resibots/limbo.git
 cd ..
 
 
-
+cd $evorl_gecco_2021_dir/modules/nn2/
+mkdir -p build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local  ..
+make 
+sudo make install
+cd $evorl_gecco_2021_dir/..
 
 
 
@@ -83,7 +99,5 @@ cd ..
 wget -nc -c  wget -c https://www.coppeliarobotics.com/files/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz -O CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
 tar -x -k -f CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
 
-mkdir -p build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ -DCOPPELIASIM_FOLDER=$evorl_gecco_2021_dir/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04 -DLIMBO_FOLDER=$evorl_gecco_2021_dir/modules/limbo ..
-make
-sudo make install
+cd $evorl_gecco_2021_dir/..
+bash build.sh
