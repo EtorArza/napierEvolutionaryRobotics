@@ -7,6 +7,5 @@
     if(WITH_NN2)
         add_subdirectory(mnipes)
         add_subdirectory(nipes)
-	add_subdirectory(mlhs)
     endif()
     install(DIRECTORY common DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h" )

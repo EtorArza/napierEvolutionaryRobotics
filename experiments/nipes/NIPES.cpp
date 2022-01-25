@@ -243,7 +243,7 @@ bool NIPES::is_finish(){
     return /*_is_finish ||*/ numberEvaluation >= maxNbrEval;
 }
 
-bool NIPES::finish_eval(){
+bool NIPES::finish_eval(const Environment::Ptr &env){
 
 
 

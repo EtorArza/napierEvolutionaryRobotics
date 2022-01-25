@@ -1,2 +1,4 @@
-evorl_gecco_2021/*
+evolutionary_robotics_framework/*
 logs/*
+*.pdf
+.vscode
