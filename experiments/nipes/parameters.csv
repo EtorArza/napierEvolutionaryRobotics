@@ -1,6 +1,6 @@
 #experimentName,string,nipes
 #expPluginName,string,/usr/local/lib/libNIPES.so
-#scenePath,string,/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/sim/hard_race.ttt
+#scenePath,string,/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/sim/obstacles_2.ttt
 #robotPath,string,/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/sim/AREPuck.ttm
 #modelPath,string,/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/sim/
 
@@ -13,7 +13,10 @@
 #archiveFile,string,archive.csv
 #energyCostFile,string,energyCost.csv
 #simTimeFile,string,simTime.csv
+#isScreenshotEnable,bool,0
+#isVideoRecordingEnable,bool,0
 
+#jointControllerType,int,0
 #verbose,bool,1
 #instanceType,int,0
 #killWhenNotConnected,bool,0
@@ -44,6 +47,7 @@
 #NbrHiddenNeurones,int,8
 #UseInternalBias,bool,1
 
+#reloadController,bool,0
 #CMAESStep,double,1.
 #FTarget,double,0.05
 #elitistRestart,bool,1
