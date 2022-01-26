@@ -1,3 +1,4 @@
+set -e
 evolutionary_robotics_framework="`pwd`/evolutionary_robotics_framework"
 rsync -r -v "experiments/" "evolutionary_robotics_framework/experiments/"
 cd $evolutionary_robotics_framework 

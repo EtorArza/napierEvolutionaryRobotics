@@ -1,4 +1,27 @@
-bash build.sh
+#!/bin/bash
+set -e
+for i in "$@"
+do
+case $i in
+    -b|--build)
+    bash build.sh
+    ;;
+    -s=*|--searchpath=*)
+    SEARCHPATH="${i#*=}"
+    ;;
+    -l=*|--lib=*)
+    DIR="${i#*=}"
+    ;;
+    --default)
+    DEFAULT=YES
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+done
+
+
 
 # logFileMountpoint="/home/paran/Dropbox/BCAM/07_estancia_1/code/logs/"
 # if grep -qs "$logFileMountpoint " /proc/mounts; then

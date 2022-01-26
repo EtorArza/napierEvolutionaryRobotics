@@ -1,5 +1,5 @@
 #include "NIPES.hpp"
-
+#include "tools.hpp"
 
 using namespace are;
 
@@ -217,15 +217,20 @@ bool NIPES::update(const Environment::Ptr & env){
     numberEvaluation++;
     reevaluated++;
 
+    static auto sw = stopwatch();
+    std::cout << "Line 221: " << sw.toc() << std::endl;
     if(simulator_side){
         Individual::Ptr ind = population[currentIndIndex];
         std::dynamic_pointer_cast<NIPESIndividual>(ind)->set_final_position(env->get_final_position());
         std::dynamic_pointer_cast<NIPESIndividual>(ind)->set_trajectory(env->get_trajectory());
+        std::cout << "Line 226: " << sw.toc() << std::endl;
         if(env->get_name() == "obstacle_avoidance"){
             std::dynamic_pointer_cast<NIPESIndividual>(ind)->set_visited_zones(std::dynamic_pointer_cast<sim::ObstacleAvoidance>(env)->get_visited_zone_matrix());
             std::dynamic_pointer_cast<NIPESIndividual>(ind)->set_descriptor_type(VISITED_ZONES);
         }
+        std::cout << "Line 231: " << sw.toc() << std::endl;
     }
+    sw.tic();
 
 
 
