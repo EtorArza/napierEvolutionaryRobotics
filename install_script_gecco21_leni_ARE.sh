@@ -101,5 +101,15 @@ cd $evolutionary_robotics_framework_dir
 wget -nc -c  wget -c https://www.coppeliarobotics.com/files/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz -O CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
 tar -x -k -f CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
 
+cd ~/Downloads
+git clone https://github.com/CoppeliaRobotics/videoRecorder.git
+cd videoRecorder
+mkdir -p build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local  ..
+make 
+cp lib/libvvcl.so $evolutionary_robotics_framework_dir/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04/libvvcl.so
+
+
+
 cd $evolutionary_robotics_framework_dir/..
 bash build.sh
