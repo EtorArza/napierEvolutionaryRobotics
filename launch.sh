@@ -6,8 +6,8 @@ case $i in
     -b|--build)
     bash build.sh
     ;;
-    -s=*|--searchpath=*)
-    SEARCHPATH="${i#*=}"
+    -p)
+    sudo cp experiments/nipes/parameters.csv evolutionary_robotics_framework/experiments/nipes/parameters.csv  
     ;;
     -l=*|--lib=*)
     DIR="${i#*=}"
@@ -33,4 +33,4 @@ done
 # fi
 
 
-./evolutionary_robotics_framework/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04/are_sim.sh simulation -h -g/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/nipes/parameters.csv
+./evolutionary_robotics_framework/CoppeliaSim_Edu_V4_3_0_Ubuntu18_04/are_sim.sh simulation -g/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/mnipes/parameters.csv

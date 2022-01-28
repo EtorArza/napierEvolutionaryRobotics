@@ -97,9 +97,9 @@ sudo make install
 
 
 cd $evolutionary_robotics_framework_dir
-# install CoppeliaSim Edu 4.1.0 18.04
-wget -nc -c  wget -c https://www.coppeliarobotics.com/files/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz -O CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
-tar -x -k -f CoppeliaSim_Edu_V4_1_0_Ubuntu18_04.tar.xz
+# install CoppeliaSim Edu 4.2.0 18.04
+wget -nc -c  wget -c https://www.coppeliarobotics.com/files/CoppeliaSim_Edu_V4_3_0_Ubuntu18_04.tar.xz -O CoppeliaSim_Edu_V4_3_0_Ubuntu18_04.tar.xz
+tar -x -k -f CoppeliaSim_Edu_V4_3_0_Ubuntu18_04.tar.xz
 
 cd ~/Downloads
 git clone https://github.com/CoppeliaRobotics/videoRecorder.git
@@ -107,9 +107,9 @@ cd videoRecorder
 mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr/local  ..
 make 
-cp lib/libvvcl.so $evolutionary_robotics_framework_dir/CoppeliaSim_Edu_V4_1_0_Ubuntu18_04/libvvcl.so
-
-
+cp lib/libvvcl.so $evolutionary_robotics_framework_dir/CoppeliaSim_Edu_V4_3_0_Ubuntu18_04/libvvcl.so
+cp $evolutionary_robotics_framework_dir/are_sim.sh $evolutionary_robotics_framework_dir/CoppeliaSim_Edu_V4_3_0_Ubuntu18_04/are_sim.sh
 
 cd $evolutionary_robotics_framework_dir/..
+cp 
 bash build.sh
