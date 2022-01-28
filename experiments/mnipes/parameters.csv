@@ -32,6 +32,7 @@
 #archiveFile,string,archive.csv
 #energyCostFile,string,energy_cost.csv
 #simTimeFile,string,sim_time.csv
+#isVideoRecordingEnable,bool,0
 
 #arenaSize,double,2.
 #target_x,double,0.0
@@ -52,10 +53,12 @@
 #jointControllerType,int,2
 
 #populationSize,int,10
-#maxEvalTime,float,60
+#bootstrapPopulation,bool,0
+#maxEvalTime,float,1
 #timeStep,float,0.1
 #numberOfGeneration,int,10
 #fitnessType,int,0
+#envType,int,1
 
 #cmaesNbrEval,int,200
 #cmaesPopSize,int,10

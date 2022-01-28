@@ -1,6 +1,10 @@
 #include "M_NIPES.hpp"
+#include "tools.hpp"
 
 using namespace are;
+static auto sw = stopwatch();
+
+
 
 fitness_fct_t FitnessFunctions::best_fitness = [](const CMAESLearner::Ptr& learner) -> double
 {
@@ -336,7 +340,7 @@ void M_NIPES::init_morph_pop(){
 }
 
 void M_NIPES::epoch(){
-
+    
     int max_organs = settings::getParameter<settings::Integer>(parameters,"#maxNbrOrgans").value;
     bool use_ctrl_arch = settings::getParameter<settings::Boolean>(parameters,"#useControllerArchive").value;
     
@@ -372,6 +376,8 @@ void M_NIPES::epoch(){
 
 
 void M_NIPES::init_next_pop(){
+    std::cout << "init_next_pop()" << sw.toc() << std::endl;
+    sw.tic();
     population.clear();
     for(int i = 0; i < morph_population->NumGenomes() ; i++){
         NEAT::Genome mgen = morph_population->AccessGenomeByIndex(i);
@@ -415,6 +421,8 @@ bool M_NIPES::update_maze(const Environment::Ptr &env){
 }
 
 bool M_NIPES::update_obstacle_avoidance(const Environment::Ptr &env){
+    std::cout << "update_obstacle_avoidance()" << sw.toc() << std::endl;
+    sw.tic();
     endEvalTime = hr_clock::now();
     numberEvaluation++;
 
@@ -452,6 +460,8 @@ bool M_NIPES::update_obstacle_avoidance(const Environment::Ptr &env){
 }
 
 bool M_NIPES::update(const Environment::Ptr& env){
+    std::cout << "update() " << sw.toc() << std::endl;
+    sw.tic();
     if(simulator_side){
         if(env->get_name() == "mazeEnv")
             return update_maze(env);
