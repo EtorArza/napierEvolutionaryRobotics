@@ -1,9 +1,25 @@
+#!/bin/bash
 set -e
+BUILD_MODE=Release
+for i in "$@"
+do
+case $i in
+    --debug)
+    echo "Building in Debug mode..."
+    BUILD_MODE=Debug
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+done
+
+
 evolutionary_robotics_framework="`pwd`/evolutionary_robotics_framework"
 rsync -r -v "experiments/" "evolutionary_robotics_framework/experiments/"
 
 # BUILD_MODE=Debug
-BUILD_MODE=Release
+# BUILD_MODE=Release
 
 cd $evolutionary_robotics_framework 
 mkdir -p build
