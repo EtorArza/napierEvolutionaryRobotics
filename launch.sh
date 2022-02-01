@@ -1,14 +1,24 @@
 #!/bin/bash
 set -e
-PARAM_FILE=""
+
+# https://stackoverflow.com/questions/2129923/how-to-run-a-command-before-a-bash-script-exits
+function cleanup {
+  echo "Removing parameter files."
+  rm  -f "/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/nipes/parameters.csv"
+  rm  -f "/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/mnipes/parameters.csv"
+}
+# trap cleanup EXIT
+
+
+EXPERIMENT=""
 for i in "$@"
 do
 case $i in
     -b|--build)
     bash build.sh
     ;;
-    -p=*|--parameters=*)
-    PARAM_FILE="${i#*=}"
+    -e=*|--experiment=*)
+    EXPERIMENT="${i#*=}"
     ;;
     --default)
     DEFAULT=YES
@@ -19,15 +29,15 @@ case $i in
 esac
 done
 
-if [ -z $PARAM_FILE ]; then
+if [[ -z $EXPERIMENT || ( $EXPERIMENT != "nipes" && $EXPERIMENT != "mnipes" ) ]]; then
     echo "Parameter file for simulation not provided."
     echo "Example: "
     echo ""
     echo "bash launch.sh -p=path/to/parameters.csv"
     echo ""
     echo "Parameters for launch.sh script: "
-    echo "-p=path/to/parameters.csv -> parameter file path"
-    echo "-b                        -> build before launch"
+    echo "-e=experiment_name       should be either nipes or mnipes"
+    echo "-b                       build before launch"
     echo "Exiting..."
     exit 1
 fi
@@ -41,8 +51,8 @@ fi
 #     echo "mounted!"
 # fi
 
-param_file_path=`realpath ${PARAM_FILE}`
-echo "Launching $param_file_path"
+
+cp -f experiments/$EXPERIMENT/parameters.csv evolutionary_robotics_framework/experiments/$EXPERIMENT/parameters.csv  
 
 # # EXECUTE V-REP
 # export LD_LIBRARY_PATH=/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04
@@ -50,4 +60,4 @@ echo "Launching $param_file_path"
 
 
 # EXECUTE COPPELIA
-./evolutionary_robotics_framework/CoppeliaSim_Edu_V4_3_0_Ubuntu18_04/are_sim.sh simulation -h -g$PARAM_FILE
+./evolutionary_robotics_framework/CoppeliaSim_Edu_V4_3_0_Ubuntu18_04/are_sim.sh simulation -h -g/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/$EXPERIMENT/parameters.csv
