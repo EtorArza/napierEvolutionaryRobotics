@@ -3,7 +3,7 @@
 
 using namespace are;
 static auto sw = stopwatch();
-
+static int n_of_ticks = 0;
 
 
 fitness_fct_t FitnessFunctions::best_fitness = [](const CMAESLearner::Ptr& learner) -> double
@@ -460,8 +460,10 @@ bool M_NIPES::update_obstacle_avoidance(const Environment::Ptr &env){
 }
 
 bool M_NIPES::update(const Environment::Ptr& env){
+    std::cout << "N. of ticks " << n_of_ticks << "\n";
     std::cout << "update() " << sw.toc() << std::endl;
     sw.tic();
+    n_of_ticks = 0;
     if(simulator_side){
         if(env->get_name() == "mazeEnv")
             return update_maze(env);
@@ -617,6 +619,7 @@ int M_NIPES::findLastGen(const std::string &exp_folder){
 }
 
 bool M_NIPES::finish_eval(const Environment::Ptr &env){
+    n_of_ticks++;
     int handle = std::dynamic_pointer_cast<CPPNMorph>(population[currentIndIndex]->get_morphology())->getMainHandle();
     float pos[3];
     simGetObjectPosition(handle,-1,pos);

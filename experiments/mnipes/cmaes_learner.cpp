@@ -103,8 +103,9 @@ void CMAESLearner::iterate(){
 }
 
 void CMAESLearner::next_pop(){
+    
     int pop_size = _cma_strat->get_parameters().lambda();
-
+    std::cout << "Generation " << _generation << " in CMA learner." << std::endl;
     _archive.emplace(_generation,_cma_strat->get_population());
     _generation++;
     dMat new_samples = _cma_strat->ask();
@@ -124,8 +125,17 @@ bool CMAESLearner::step(){
 
     int max_nbr_eval = settings::getParameter<settings::Integer>(parameters,"#cmaesNbrEval").value;
     if(_nbr_eval >= max_nbr_eval || _is_finish || nbr_dropped_eval > 50)
+    {
+        std::stringstream reason_halt_CMA;
+        if (_nbr_eval >= max_nbr_eval)
+        reason_halt_CMA << "_nbr_eval >= max_nbr_eval, CMA used all the " << max_nbr_eval << " evaluations budget.";
+        else if (_is_finish)
+        reason_halt_CMA << "_is_finish" << ", fitness reached ftarget (task solved).";
+        else if ( nbr_dropped_eval > 50)
+        reason_halt_CMA << "nbr_dropped_eval > 50" <<  ", an evaluation is considered dropped if it the does not move at least 10 times in the first 10.0 seconds of simulation. If this happens 50 times, we halt the CMA learner.";
+        std::cout << "End CMA learner, " << reason_halt_CMA.str() << std::endl;
         return true;
-
+    }
     next_pop();
 
     return false;
