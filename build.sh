@@ -16,7 +16,7 @@ done
 
 
 evolutionary_robotics_framework="`pwd`/evolutionary_robotics_framework"
-rsync -r -v "experiments/" "evolutionary_robotics_framework/experiments/"
+rsync -r -v --exclude=*.csv "experiments/" "evolutionary_robotics_framework/experiments/"
 
 # BUILD_MODE=Debug
 # BUILD_MODE=Release
