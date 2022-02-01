@@ -3,7 +3,25 @@ import numpy as np
 from cycler import cycler
 from statistics import mean,median
 from pylab import polyfit
+import subprocess
+
 savefigpath = "/home/paran/Dropbox/BCAM/07_estancia_1/code/results/figures/"
+experimentCsvPath="/home/paran/Dropbox/BCAM/07_estancia_1/code/experiments/nipes/parameters.csv"
+experimentName = "nipes"
+
+def get_evaluation_runtimes(MaxEvalTime):
+    subprocess.run(f"python /home/paran/Dropbox/BCAM/07_estancia_1/code/scripts/utils/UpdateParameter.py -f {experimentCsvPath} -n MaxEvalTime -v {MaxEvalTime}")
+    subprocess.run(f"python /home/paran/Dropbox/BCAM/07_estancia_1/code/scripts/utils/UpdateParameter.py -f {experimentCsvPath} -n maxNbrEval -v {100}")    
+    exec_res=subprocess.run(f"bash launch.sh -e={experimentName}",shell=True, capture_output=True)  
+    txt_res= str(exec_res.stdout).strip("'b")
+
+    def extract_runtimes(all_lines_string: str):
+        res=[]
+        line_list = all_lines_string.split("\n")
+        for line in line_list:
+            if "update() " in line:
+                res.append(float(line.strip("update() ")))
+    return extract_runtimes(txt_res)
 
 
 def load_bw_theme(ax: plt.Axes):
@@ -16,6 +34,8 @@ def load_bw_theme(ax: plt.Axes):
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
+
+
 
 max_eval_time_120 = [14.4758,5.25766,4.59861,5.27092,4.68442,10.332,3.14345,3.91669,5.23791,5.58812,16.8535,15.9301,15.6178,15.7633,16.7013,11.5992,3.81625,3.78967,3.64588,15.667,6.51727,15.8531,15.7443,10.0485,3.60934,4.43695,4.96408,4.35975,4.72157,4.48406,15.7166,16.012,16.4617,15.7241,3.90985,4.41529,3.81494,16.0893,3.28551,4.69864,4.33053,16.0911,16.241,16.1911,15.7116,3.87203,3.58704,4.71787,16.578,4.47152,4.9429,15.9077,4.70432,4.94069,16.3889,15.814,10.9984,15.8777,3.95713,4.8274,15.4066,4.89693,3.74947,4.53097,16.2423,16.4881,16.3168,15.9059,16.3028,8.5462,4.45601,16.0504,3.75153,5.07427,15.9363,15.186,15.8195,15.8936,4.67239,4.05793,18.4133,4.4761,4.7302,16.1558,16.4998,12.1519,5.07185,16.6765,16.1159,16.1352,4.47867,5.58747,4.12058,5.79309,3.42018,5.52356,4.24405,16.6078,16.1154,16.1179,4.36286,3.82021,13.3309,4.42482,4.85078,3.99668]
 max_eval_time_90 = [12.5514,5.31574,4.69225,5.3261,4.76998,8.6944,3.16889,3.94907,5.3608,5.54525,13.2355,12.5776,12.8019,12.9376,12.8384,10.1723,3.8029,3.77061,3.66541,13.3129,6.89533,12.9714,13.219,9.10782,3.74206,4.59319,5.09202,4.46988,4.82846,4.63725,12.9764,13.1335,13.1551,12.8419,3.80299,4.3266,3.91064,13.2144,3.32515,4.70416,4.33118,13.3278,12.8892,13.3512,12.9722,3.82683,3.6474,4.81874,13.5772,4.64671,5.24816,13.1283,4.76465,4.8328,13.0647,13.0408,9.45488,13.6915,4.04001,5.06324,13.4775,4.95309,3.78866,4.59496,13.0212,13.4294,13.2433,12.8147,13.8308,7.69549,4.51751,13.4652,3.81626,5.12268,13.6622,13.1524,13.9812,13.4024,4.80711,4.21057,15.2398,4.60054,4.7236,13.5233,13.8653,9.82153,5.06886,13.2112,13.0996,13.5796,4.41966,5.58945,4.14322,5.79972,3.57027,5.5668,4.22458,13.5433,13.7514,13.2629,4.313,3.89031,4.85129,4.45336,5.03554,3.98207,13.5733,3.71547,3.85661]
