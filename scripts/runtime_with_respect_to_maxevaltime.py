@@ -11,7 +11,7 @@ experimentName = "nipes"
 
 def get_evaluation_runtimes(MaxEvalTime):
     print("Computing runtimes for MaxEvalTime =", MaxEvalTime)
-    subprocess.run(f"python /home/paran/Dropbox/BCAM/07_estancia_1/code/scripts/utils/UpdateParameter.py -f {experimentCsvPath} -n MaxEvalTime -v {MaxEvalTime}",shell=True, capture_output=True)
+    subprocess.run(f"python /home/paran/Dropbox/BCAM/07_estancia_1/code/scripts/utils/UpdateParameter.py -f {experimentCsvPath} -n maxEvalTime -v {MaxEvalTime}",shell=True, capture_output=True)
     subprocess.run(f"python /home/paran/Dropbox/BCAM/07_estancia_1/code/scripts/utils/UpdateParameter.py -f {experimentCsvPath} -n maxNbrEval -v {100}",shell=True, capture_output=True)    
     exec_res=subprocess.run(f"bash launch.sh -e={experimentName}",shell=True, capture_output=True)  
     txt_res= str(exec_res.stdout).strip("'b").strip('"').strip("'")
