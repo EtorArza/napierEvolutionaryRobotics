@@ -2,7 +2,6 @@
 #include "M_NIPES.hpp"
 
 
-using namespace are;
 
 void stopwatch::tic()
 { 

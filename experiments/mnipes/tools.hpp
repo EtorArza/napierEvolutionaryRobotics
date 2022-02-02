@@ -3,8 +3,6 @@
 
 #include <chrono>
 
-namespace are{
-
 class stopwatch
 {
 public:
@@ -15,7 +13,5 @@ public:
 private:
     std::chrono::_V2::system_clock::time_point tt_tic;
 };
-
-}
 
 #endif
