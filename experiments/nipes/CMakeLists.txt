@@ -9,7 +9,8 @@ set(INCLUDES
     "../../EAFramework/include"
     "../common/"
     "/usr/include/eigen3"
-    "../../modules/")
+    "../../modules/"
+    "../mnipes/")
 
 SET(VREP_SRC
     $<$<BOOL:${VREP_FOUND}>:${VREP_FOLDER}/programming/common/v_repLib.cpp>
@@ -28,12 +29,11 @@ add_library(NIPES SHARED
     factories.cpp
     NIPESLoggings.cpp
     NIPES.cpp
-    tools.cpp
+    ../mnipes/tools.cpp
     obstacleAvoidance.cpp
     )
 target_include_directories(NIPES PUBLIC ${INCLUDES})
-target_link_libraries(NIPES ARE
-    simulatedER cmaes tbb)
+target_link_libraries(NIPES ARE simulatedER cmaes tbb)
 
 add_executable(nipes_test nipes_test.cpp)
 target_include_directories(nipes_test PUBLIC ${INCLUDES})
