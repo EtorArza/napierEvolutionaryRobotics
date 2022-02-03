@@ -14,4 +14,9 @@ private:
     std::chrono::_V2::system_clock::time_point tt_tic;
 };
 
+
+double get_adjusted_runtime(double progress, double c, double max_runtime);
+
+
+
 #endif

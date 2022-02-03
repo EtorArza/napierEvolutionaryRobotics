@@ -1,5 +1,5 @@
 #include "NIPES.hpp"
-#include "tools.hpp"
+#include "../mnipes/tools.hpp"
 
 using namespace are;
 static auto sw = stopwatch();
@@ -248,6 +248,18 @@ bool NIPES::is_finish(){
 
 bool NIPES::finish_eval(const Environment::Ptr &env){
 
+    std::cout << "simGetSimulationTime()" << simGetSimulationTime() << std::endl;
+
+    static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
+    static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
+    double current_runtime = (double) simGetSimulationTime();
+    
+    double progress = (double) numberEvaluation / (double) maxNbrEval; 
+    double adjusted_maxEvalTime = get_adjusted_runtime(progress, 0.0, (double) maxEvalTime);
+    if (current_runtime > adjusted_maxEvalTime)
+    {
+        return true;
+    }
 
 
     float tPos[3];

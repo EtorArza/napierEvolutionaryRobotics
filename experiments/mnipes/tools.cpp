@@ -14,3 +14,13 @@ double stopwatch::toc()
     std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(now - tt_tic);
     return time_span.count();
 }
+
+double get_adjusted_runtime(double progress, double c, double max_runtime)
+{
+    if (progress < 0.0 || progress > 1.0)
+    {
+        std::cout << "Error, variable progress should be between 0 and 1. Instead, progress = " << progress << std::endl;
+    }
+    double perc_time = pow(progress, pow(2.0,c));
+    return max_runtime * progress;
+}
