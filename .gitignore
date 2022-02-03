@@ -3,3 +3,4 @@ logs/*
 *.pdf
 .vscode
 evolutionary_robotics_framework
+__pycache__
