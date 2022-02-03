@@ -250,17 +250,22 @@ bool NIPES::finish_eval(const Environment::Ptr &env){
 
     std::cout << "simGetSimulationTime()" << simGetSimulationTime() << std::endl;
 
-    static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
-    static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
-    double current_runtime = (double) simGetSimulationTime();
-    
-    double progress = (double) numberEvaluation / (double) maxNbrEval; 
-    double adjusted_maxEvalTime = get_adjusted_runtime(progress, 0.0, (double) maxEvalTime);
-    if (current_runtime > adjusted_maxEvalTime)
-    {
-        return true;
-    }
+    static const bool expIncreaseMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#expIncreaseMaxEvalTime").value;
 
+    if (expIncreaseMaxEvalTime)
+    {
+        static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
+        static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
+        static const double constantExpIncreaseMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#constantExpIncreaseMaxEvalTime").value;
+        double current_runtime = (double) simGetSimulationTime();
+        
+        double progress = (double) numberEvaluation / (double) maxNbrEval;
+        double adjusted_maxEvalTime = get_adjusted_runtime(progress, constantExpIncreaseMaxEvalTime, (double) maxEvalTime);
+        if (current_runtime > adjusted_maxEvalTime)
+        {
+            return true;
+        }
+    }
 
     float tPos[3];
     tPos[0] = settings::getParameter<settings::Double>(parameters,"#target_x").value;

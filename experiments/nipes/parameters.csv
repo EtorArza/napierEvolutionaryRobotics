@@ -23,10 +23,13 @@
 #shouldReopenConnections,bool,0
 #seed,int,-1
 
-#populationSize,int,10
-#maxEvalTime,float,2.0
-#maxNbrEval,int,1000
+#populationSize,int,4
+#maxEvalTime,float,0.9
+#maxNbrEval,int,40
 #timeStep,float,0.1
+
+#constantExpIncreaseMaxEvalTime,float,6.0
+#expIncreaseMaxEvalTime,bool,0
 
 #noiseLevel,double,0.
 #maxVelocity,double,10.
@@ -38,8 +41,7 @@
 #target_z,double,0.05
 #init_x,float,0
 #init_y,float,0
-#init_z,float,0.99
-
+#init_z,float,0.12
 #MaxWeight,float,1.0
 #NNType,int,2
 #NbrInputNeurones,int,8
@@ -52,7 +54,7 @@
 #FTarget,double,0.05
 #elitistRestart,bool,1
 #withRestart,bool,1
-#incrPop,bool,1
+#incrPop,bool,0
 #lengthOfStagnation,int,20
 #kValue,int,15
 #noveltyThreshold,double,0.9

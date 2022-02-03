@@ -15,7 +15,7 @@ private:
 };
 
 
-double get_adjusted_runtime(double progress, double c, double max_runtime);
+double get_adjusted_runtime(double progress, double constantExpIncreaseMaxEvalTime, double max_runtime);
 
 
 
