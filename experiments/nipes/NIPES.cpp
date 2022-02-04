@@ -19,6 +19,17 @@ Eigen::VectorXd NIPESIndividual::descriptor()
 }
 
 void NIPES::init(){
+
+
+    static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
+    if (modifyMaxEvalTime)
+    {
+        currentMaxEvalTime = settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
+    }
+    else
+    {
+        currentMaxEvalTime = settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
+    }
     int lenStag = settings::getParameter<settings::Integer>(parameters,"#lengthOfStagnation").value;
 
     int pop_size = settings::getParameter<settings::Integer>(parameters,"#populationSize").value;
@@ -101,6 +112,20 @@ void NIPES::init(){
 }
 
 void NIPES::epoch(){
+
+    static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
+    if (modifyMaxEvalTime)
+    {
+        static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
+        static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
+        static const double minEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
+        static const double constantmodifyMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#constantmodifyMaxEvalTime").value;
+        double progress = (double) numberEvaluation / (double) maxNbrEval;
+        // std::cout << "progress: " << progress << std::endl;
+        // std::cout << "(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) = (" << progress << "," << constantmodifyMaxEvalTime << "," << (double) (maxEvalTime - minEvalTime) << ")" << std::endl;
+        // std::cout << "get_adjusted_runtime()" << get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) << std::endl;
+        currentMaxEvalTime = minEvalTime + get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime));
+    }
 
     bool verbose = settings::getParameter<settings::Boolean>(parameters,"#verbose").value;
     bool withRestart = settings::getParameter<settings::Boolean>(parameters,"#withRestart").value;
@@ -248,23 +273,14 @@ bool NIPES::is_finish(){
 
 bool NIPES::finish_eval(const Environment::Ptr &env){
 
-    std::cout << "simGetSimulationTime()" << simGetSimulationTime() << std::endl;
+    // std::cout << "simGetSimulationTime()" << simGetSimulationTime() << std::endl;
 
-    static const bool expIncreaseMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#expIncreaseMaxEvalTime").value;
+    static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
 
-    if (expIncreaseMaxEvalTime)
+    if (modifyMaxEvalTime && (double) simGetSimulationTime() + 0.3 > currentMaxEvalTime)
     {
-        static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
-        static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
-        static const double constantExpIncreaseMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#constantExpIncreaseMaxEvalTime").value;
-        double current_runtime = (double) simGetSimulationTime();
-        
-        double progress = (double) numberEvaluation / (double) maxNbrEval;
-        double adjusted_maxEvalTime = get_adjusted_runtime(progress, constantExpIncreaseMaxEvalTime, (double) maxEvalTime);
-        if (current_runtime > adjusted_maxEvalTime)
-        {
-            return true;
-        }
+        // std::cout << "True returned in finish_eval()" << std::endl;
+        return true;
     }
 
     float tPos[3];

@@ -54,7 +54,7 @@
 
 #populationSize,int,10
 #bootstrapPopulation,bool,0
-#maxEvalTime,float,1
+#maxEvalTime,float,1.0
 #timeStep,float,0.1
 #numberOfGeneration,int,10
 #fitnessType,int,0
@@ -63,7 +63,7 @@
 #cmaesNbrEval,int,200
 #cmaesPopSize,int,10
 #CMAESStep,double,1.
-#FTarget,double,0.05
+#FTarget,double,1.0
 #elitistRestart,bool,0
 #withRestart,bool,1
 #incrPop,bool,1

@@ -23,13 +23,14 @@
 #shouldReopenConnections,bool,0
 #seed,int,-1
 
-#populationSize,int,4
-#maxEvalTime,float,0.9
-#maxNbrEval,int,40
+#populationSize,int,10
+#maxEvalTime,float,30.0
+#maxNbrEval,int,1000
 #timeStep,float,0.1
 
-#constantExpIncreaseMaxEvalTime,float,6.0
-#expIncreaseMaxEvalTime,bool,0
+#modifyMaxEvalTime,bool,1
+#constantmodifyMaxEvalTime,float,1.0
+#minEvalTime,float,2.0
 
 #noiseLevel,double,0.
 #maxVelocity,double,10.
