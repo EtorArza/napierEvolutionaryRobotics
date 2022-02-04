@@ -4,15 +4,16 @@ from cycler import cycler
 from statistics import mean,median
 from pylab import polyfit
 import subprocess
+from utils.UpdateParameter import update_parameter
 
 savefigpath = "/home/paran/Dropbox/BCAM/07_estancia_1/code/results/figures/"
 experimentCsvPath="/home/paran/Dropbox/BCAM/07_estancia_1/code/experiments/nipes/parameters.csv"
 experimentName = "nipes"
 
-def get_evaluation_runtimes(MaxEvalTime):
-    print("Computing runtimes for MaxEvalTime =", MaxEvalTime)
-    subprocess.run(f"python /home/paran/Dropbox/BCAM/07_estancia_1/code/scripts/utils/UpdateParameter.py -f {experimentCsvPath} -n maxEvalTime -v {MaxEvalTime}",shell=True, capture_output=True)
-    subprocess.run(f"python /home/paran/Dropbox/BCAM/07_estancia_1/code/scripts/utils/UpdateParameter.py -f {experimentCsvPath} -n maxNbrEval -v {100}",shell=True, capture_output=True)    
+def get_evaluation_runtimes(maxEvalTime):
+    print("Computing runtimes for MaxEvalTime =", maxEvalTime)
+    update_parameter(experimentCsvPath, "maxEvalTime", maxEvalTime)
+    update_parameter(experimentCsvPath, "maxNbrEval", 100)
     exec_res=subprocess.run(f"bash launch.sh -e={experimentName}",shell=True, capture_output=True)  
     txt_res= str(exec_res.stdout).strip("'b").strip('"').strip("'")
 
