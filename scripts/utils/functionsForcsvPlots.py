@@ -243,5 +243,5 @@ def get_best_fitness(filename, objective):
     Get the best fitness in the whole optimization process,
     for the given objective.
     '''
-    _, _, best_fit_list, _, _ = load_all_fitnesses(dir_with_all_csv + "/fitnesses.csv", objective)
+    _, _, best_fit_list, _, _ = load_all_fitnesses(filename + "/fitnesses.csv", objective)
     return max(best_fit_list)
