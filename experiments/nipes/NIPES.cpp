@@ -1,8 +1,13 @@
 #include "NIPES.hpp"
 #include "../mnipes/tools.hpp"
+#include <sstream>
 
 using namespace are;
 static auto sw = stopwatch();
+static auto total_time_sw = stopwatch();
+static double best_fitness = -__DBL_MAX__;
+std::string result_filename;
+
 
 Eigen::VectorXd NIPESIndividual::descriptor()
 {
@@ -19,15 +24,22 @@ Eigen::VectorXd NIPESIndividual::descriptor()
 }
 
 void NIPES::init(){
+    total_time_sw.tic();
+    settings::defaults::parameters->emplace("#modifyMaxEvalTime",new settings::Boolean(false));
+    result_filename =  settings::getParameter<settings::String>(parameters,"#repository").value + 
+                       std::string("/") + 
+                       settings::getParameter<settings::String>(parameters,"#resultFile").value;
 
 
     static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
     if (modifyMaxEvalTime)
     {
+        std::cout << "Modifying minEvalTime" << std::endl;
         currentMaxEvalTime = settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
     }
     else
     {
+        std::cout << "Constant minEvalTime" << std::endl;
         currentMaxEvalTime = settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
     }
     int lenStag = settings::getParameter<settings::Integer>(parameters,"#lengthOfStagnation").value;
@@ -166,6 +178,26 @@ void NIPES::epoch(){
             Novelty::update_archive(ind_desc,ind_nov,archive,randomNum);
         }
     }
+
+    for (const auto &ind : population)
+    {
+        double fitness;
+        static const int envType = settings::getParameter<settings::Integer>(parameters, "#envType").value;
+        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
+
+        if (fitness > best_fitness)
+        {
+            best_fitness = fitness;
+        }
+        std::cout << "(fitness envType0, fitness envType1) = ("
+                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[0]
+                  << ","
+                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[1]
+                  << ")"
+                  << std::endl;
+        sw.tic();
+    }
+
     /**/
 
     std::vector<IPOPCMAStrategy::individual_t> pop;
@@ -268,7 +300,26 @@ bool NIPES::update(const Environment::Ptr & env){
 bool NIPES::is_finish(){
     int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
 
-    return /*_is_finish ||*/ numberEvaluation >= maxNbrEval;
+    if (numberEvaluation >= maxNbrEval)
+    {
+        double total_time = total_time_sw.toc();
+        std::cout << "Best fitness: " << best_fitness << std::endl;
+        std::cout << "Total runtime: " << total_time_sw.toc() << std::endl;
+        std::stringstream res_to_write;  
+        res_to_write << std::setprecision(28);
+        res_to_write << settings::getParameter<settings::String>(parameters,"#preTextInResultFile").value;
+        res_to_write << ",";
+        res_to_write << best_fitness;
+        res_to_write << ",";
+        res_to_write << total_time;
+        res_to_write << "\n";
+        append_line_to_file(result_filename,res_to_write.str());
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool NIPES::finish_eval(const Environment::Ptr &env){

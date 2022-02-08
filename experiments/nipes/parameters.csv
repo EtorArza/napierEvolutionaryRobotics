@@ -13,6 +13,9 @@
 #archiveFile,string,archive.csv
 #energyCostFile,string,energyCost.csv
 #simTimeFile,string,simTime.csv
+#resultFile,string,result.txt
+#preTextInResultFile,string,yolo
+
 #isScreenshotEnable,bool,0
 #isVideoRecordingEnable,bool,0
 
