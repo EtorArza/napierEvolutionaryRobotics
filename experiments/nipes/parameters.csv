@@ -1,5 +1,8 @@
 #experimentName,string,nipes
 #preTextInResultFile,string,yolo
+#resultFile,string,result.txt
+
+
 #expPluginName,string,/usr/local/lib/libNIPES.so
 #scenePath,string,/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/sim/obstacles_2.ttt
 #robotPath,string,/home/paran/Dropbox/BCAM/07_estancia_1/code/evolutionary_robotics_framework/experiments/sim/model0.ttm
@@ -14,7 +17,6 @@
 #archiveFile,string,archive.csv
 #energyCostFile,string,energyCost.csv
 #simTimeFile,string,simTime.csv
-#resultFile,string,result.txt
 
 #isScreenshotEnable,bool,0
 #isVideoRecordingEnable,bool,0
