@@ -6,6 +6,7 @@ using namespace are;
 static auto sw = stopwatch();
 static auto total_time_sw = stopwatch();
 static double best_fitness = -__DBL_MAX__;
+static int envType;
 std::string result_filename;
 
 
@@ -182,7 +183,6 @@ void NIPES::epoch(){
     for (const auto &ind : population)
     {
         double fitness;
-        static const int envType = settings::getParameter<settings::Integer>(parameters, "#envType").value;
         fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
 
         if (fitness > best_fitness)
@@ -328,6 +328,8 @@ bool NIPES::finish_eval(const Environment::Ptr &env){
 
     static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
 
+    // we need an offset of 0.3 seconds, because the simulation will halt the third 
+    // time true is returned.
     if (modifyMaxEvalTime && (double) simGetSimulationTime() + 0.3 > currentMaxEvalTime)
     {
         // std::cout << "True returned in finish_eval()" << std::endl;
