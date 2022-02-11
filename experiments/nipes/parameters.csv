@@ -34,7 +34,6 @@
 #maxNbrEval,int,16
 #timeStep,float,0.1
 
-#use_sim_sensor_data,bool,0
 #modifyMaxEvalTime,bool,0
 #constantmodifyMaxEvalTime,float,1.0
 #minEvalTime,float,2.0
@@ -76,4 +75,5 @@
 #nbrWaypoints,int,50
 #withBeacon,bool,1
 #flatFloor,bool,1
+#use_sim_sensor_data,bool,0
 #withTiles,bool,1     
