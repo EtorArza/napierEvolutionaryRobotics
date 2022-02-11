@@ -14,6 +14,7 @@
 #include "simulatedER/nn2/NN2Individual.hpp"
 #include "ARE/Settings.h"
 #include "obstacleAvoidance.hpp"
+#include "../mnipes/tools.hpp"
 
 namespace are{
 
@@ -86,6 +87,15 @@ protected:
     int n_reevaluations = 0;
     int n_iterations_isReevaluating = 0;
     float currentMaxEvalTime = 0; 
+
+    stopwatch sw = stopwatch();
+    stopwatch total_time_sw = stopwatch();
+    double best_fitness = -__DBL_MAX__;
+    int envType;
+    bool isReevaluating=false;
+
+    std::string result_filename;
+    std::string subexperiment_name;
 };
 
 }

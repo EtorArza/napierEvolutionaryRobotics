@@ -1,16 +1,7 @@
 #include "NIPES.hpp"
-#include "../mnipes/tools.hpp"
 #include <sstream>
 
 using namespace are;
-static auto sw = stopwatch();
-static auto total_time_sw = stopwatch();
-static double best_fitness = -__DBL_MAX__;
-static int envType;
-std::string result_filename;
-std::string subexperiment_name;
-
-static bool isReevaluating=false;
 
 Eigen::VectorXd NIPESIndividual::descriptor()
 {
