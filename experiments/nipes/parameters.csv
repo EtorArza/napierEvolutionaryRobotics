@@ -1,4 +1,5 @@
 #experimentName,string,nipes
+#subexperimentName,string,measure_ranks
 #preTextInResultFile,string,yolo
 #resultFile,string,result.txt
 
@@ -26,11 +27,11 @@
 #instanceType,int,0
 #killWhenNotConnected,bool,0
 #shouldReopenConnections,bool,0
-#seed,int,-1
+#seed,int,6
 
-#populationSize,int,10
-#maxEvalTime,float,30.0
-#maxNbrEval,int,10000
+#populationSize,int,4
+#maxEvalTime,float,5.0
+#maxNbrEval,int,16
 #timeStep,float,0.1
 
 #use_sim_sensor_data,bool,0
@@ -41,7 +42,7 @@
 #noiseLevel,double,0.
 #maxVelocity,double,10.
 
-#envType,int,1
+#envType,int,0
 #arenaSize,double,2.
 #target_x,double,0.75
 #target_y,double,0.75

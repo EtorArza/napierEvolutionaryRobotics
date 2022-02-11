@@ -8,7 +8,7 @@ static auto total_time_sw = stopwatch();
 static double best_fitness = -__DBL_MAX__;
 static int envType;
 std::string result_filename;
-
+std::string subexperiment_name;
 
 Eigen::VectorXd NIPESIndividual::descriptor()
 {
@@ -26,6 +26,19 @@ Eigen::VectorXd NIPESIndividual::descriptor()
 
 void NIPES::init(){
     total_time_sw.tic();
+    subexperiment_name = settings::getParameter<settings::String>(parameters,"#subexperimentName").value;
+    envType = settings::getParameter<settings::Integer>(parameters, "#envType").value;
+
+    if (
+        subexperiment_name != "measure_ranks" && 
+        subexperiment_name != "standard"         
+        )
+    {
+        std::cerr << "ERROR: subexperimentName = " << subexperiment_name << " not recognized." << std::endl;
+        exit(1);
+    }
+    
+
     settings::defaults::parameters->emplace("#modifyMaxEvalTime",new settings::Boolean(false));
     result_filename =  settings::getParameter<settings::String>(parameters,"#repository").value + 
                        std::string("/") + 
@@ -126,19 +139,6 @@ void NIPES::init(){
 
 void NIPES::epoch(){
 
-    static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
-    if (modifyMaxEvalTime)
-    {
-        static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
-        static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
-        static const double minEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
-        static const double constantmodifyMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#constantmodifyMaxEvalTime").value;
-        double progress = (double) numberEvaluation / (double) maxNbrEval;
-        // std::cout << "progress: " << progress << std::endl;
-        // std::cout << "(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) = (" << progress << "," << constantmodifyMaxEvalTime << "," << (double) (maxEvalTime - minEvalTime) << ")" << std::endl;
-        // std::cout << "get_adjusted_runtime()" << get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) << std::endl;
-        currentMaxEvalTime = minEvalTime + get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime));
-    }
 
     bool verbose = settings::getParameter<settings::Boolean>(parameters,"#verbose").value;
     bool withRestart = settings::getParameter<settings::Boolean>(parameters,"#withRestart").value;
@@ -179,6 +179,62 @@ void NIPES::epoch(){
             Novelty::update_archive(ind_desc,ind_nov,archive,randomNum);
         }
     }
+
+
+    // Write results experiment "measure_ranks"
+    if (subexperiment_name == "measure_ranks")
+    {
+        std::vector<double> f_scores(population.size());
+        std::vector<int> ranks(population.size());
+        f_scores.resize(population.size());
+        for (size_t i = 0; i < population.size(); i++)
+        {   
+            auto ind = population[i];
+            double fitness;
+            fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
+            f_scores[i] = fitness;
+        }
+        std::cout << "----" << std::endl;
+        PrintArray(f_scores.data(), population.size());
+        PrintArray(ranks.data(), population.size());
+        compute_order_from_double_to_int(f_scores.data(),population.size(),ranks.data(),false);
+
+        PrintArray(f_scores.data(), population.size());
+        PrintArray(ranks.data(), population.size());
+        std::cout << "----" << std::endl;
+
+
+        std::stringstream res_to_write;  
+        res_to_write << std::setprecision(28);
+        res_to_write << settings::getParameter<settings::String>(parameters,"#preTextInResultFile").value << ",";
+        res_to_write << currentMaxEvalTime << ",";
+        res_to_write << numberEvaluation << ",";
+        res_to_write << "(";
+        res_to_write << iterable_to_str(ranks.begin(), ranks.end());
+        res_to_write << "),(";
+        res_to_write << iterable_to_str(f_scores.begin(), f_scores.end());
+        res_to_write << ")\n";
+        append_line_to_file(result_filename,res_to_write.str());
+    }
+
+
+    static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
+    if (modifyMaxEvalTime)
+    {
+        static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
+        static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
+        static const double minEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
+        static const double constantmodifyMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#constantmodifyMaxEvalTime").value;
+        double progress = (double) numberEvaluation / (double) maxNbrEval;
+        // std::cout << "progress: " << progress << std::endl;
+        // std::cout << "(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) = (" << progress << "," << constantmodifyMaxEvalTime << "," << (double) (maxEvalTime - minEvalTime) << ")" << std::endl;
+        // std::cout << "get_adjusted_runtime()" << get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) << std::endl;
+        currentMaxEvalTime = minEvalTime + get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime));
+    }
+
+
+
+
 
     for (const auto &ind : population)
     {

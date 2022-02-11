@@ -3,6 +3,15 @@
 #include <cmath>
 
 
+class _sort_indices_double
+{
+   private:
+     double* mparr;
+   public:
+     _sort_indices_double(double* parr) : mparr(parr) {}
+     bool operator()(int i, int j) const { return mparr[i]<mparr[j]; }
+};
+
 void stopwatch::tic()
 { 
     tt_tic = are::hr_clock::now();
@@ -23,4 +32,39 @@ double get_adjusted_runtime(double progress, double constantmodifyMaxEvalTime, d
     }
     double perc_time = pow(progress, pow(2.0,constantmodifyMaxEvalTime));
     return max_runtime * perc_time;
+}
+
+
+void compute_order_from_double_to_int(double* v, int len, int* order_res, bool reverse){
+    
+    if (reverse)
+    {
+        for (int i = 0; i < len; i++)
+        {
+            v[i] = - v[i];
+        }
+        
+    }
+
+
+    int* temp = new int[len];
+    for (int i = 0; i < len; i++)
+    {
+        temp[i] = i;
+    }
+    std::sort(temp, temp+len, _sort_indices_double(v));
+    for (int i = 0; i < len; i++)
+    {
+        order_res[temp[i]] = i;
+    }
+    
+    if (reverse)
+    {
+        for (int i = 0; i < len; i++)
+        {
+            v[i] = - v[i];
+        }
+        
+    }
+    delete[] temp;
 }
