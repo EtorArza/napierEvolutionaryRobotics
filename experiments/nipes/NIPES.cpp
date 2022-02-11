@@ -227,6 +227,7 @@ void NIPES::print_fitness_iteration()
 {
     for (const auto &ind : population)
     {
+        std::cout << "objectives: " << iterable_to_str(std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives().begin(), std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives().end()) << std::endl;
         double fitness;
         fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
 
@@ -234,13 +235,6 @@ void NIPES::print_fitness_iteration()
         {
             best_fitness = fitness;
         }
-        std::cout << "(fitness envType0, fitness envType1) = ("
-                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[0]
-                  << ","
-                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[1]
-                  << ")"
-                  << std::endl;
-        sw.tic();
     }
 }
 
