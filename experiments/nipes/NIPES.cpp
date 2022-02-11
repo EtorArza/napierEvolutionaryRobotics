@@ -10,6 +10,8 @@ static int envType;
 std::string result_filename;
 std::string subexperiment_name;
 
+static bool isReevaluating=false;
+
 Eigen::VectorXd NIPESIndividual::descriptor()
 {
     if(descriptor_type == FINAL_POSITION){
@@ -48,12 +50,12 @@ void NIPES::init(){
     static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
     if (modifyMaxEvalTime)
     {
-        std::cout << "Modifying minEvalTime" << std::endl;
+        std::cout << "Modifying maxEvalTime" << std::endl;
         currentMaxEvalTime = settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
     }
     else
     {
-        std::cout << "Constant minEvalTime" << std::endl;
+        std::cout << "Constant maxEvalTime" << std::endl;
         currentMaxEvalTime = settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
     }
     int lenStag = settings::getParameter<settings::Integer>(parameters,"#lengthOfStagnation").value;
@@ -137,13 +139,138 @@ void NIPES::init(){
 
 }
 
-void NIPES::epoch(){
 
+void NIPES::write_measure_ranks_to_results()
+{
+    std::vector<double> f_scores(population.size());
+    std::vector<int> ranks(population.size());
+    f_scores.resize(population.size());
+    for (size_t i = 0; i < population.size(); i++)
+    {   
+        auto ind = population[i];
+        double fitness;
+        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
+        f_scores[i] = fitness;
+    }
+    std::cout << "----" << std::endl;
+    PrintArray(f_scores.data(), population.size());
+    PrintArray(ranks.data(), population.size());
+    compute_order_from_double_to_int(f_scores.data(),population.size(),ranks.data(),false);
+
+    PrintArray(f_scores.data(), population.size());
+    PrintArray(ranks.data(), population.size());
+    std::cout << "----" << std::endl;
+
+
+    std::stringstream res_to_write;
+    res_to_write << std::setprecision(28);
+    res_to_write << settings::getParameter<settings::String>(parameters,"#preTextInResultFile").value << ",";
+    res_to_write << currentMaxEvalTime << ",";
+    res_to_write << numberEvaluation << ",";
+    res_to_write << "(";
+    res_to_write << iterable_to_str(ranks.begin(), ranks.end());
+    res_to_write << "),(";
+    res_to_write << iterable_to_str(f_scores.begin(), f_scores.end());
+    res_to_write << "),";
+    res_to_write << compute_population_genome_hash();
+    res_to_write << "\n";
+    append_line_to_file(result_filename,res_to_write.str());
+}
+
+void NIPES::cma_iteration(){
 
     bool verbose = settings::getParameter<settings::Boolean>(parameters,"#verbose").value;
     bool withRestart = settings::getParameter<settings::Boolean>(parameters,"#withRestart").value;
     bool incrPop = settings::getParameter<settings::Boolean>(parameters,"#incrPop").value;
     bool elitist_restart = settings::getParameter<settings::Boolean>(parameters,"#elitistRestart").value;
+    std::vector<IPOPCMAStrategy::individual_t> pop;
+    for (const auto &ind : population)
+    {
+        IPOPCMAStrategy::individual_t cma_ind;
+        cma_ind.genome = std::dynamic_pointer_cast<NNParamGenome>(ind->get_ctrl_genome())->get_full_genome();
+        cma_ind.descriptor = std::dynamic_pointer_cast<sim::NN2Individual>(ind)->get_final_position();
+        cma_ind.objectives = std::dynamic_pointer_cast<sim::NN2Individual>(ind)->getObjectives();
+        pop.push_back(cma_ind);
+    }
+
+    cmaStrategy->set_population(pop);
+    cmaStrategy->eval();
+    cmaStrategy->tell();
+    bool stop = cmaStrategy->stop();
+    //    if(cmaStrategy->have_reached_ftarget()){
+    //        _is_finish = true;
+    ////        return;
+    //    }
+
+        if(withRestart && stop){
+            if(verbose)
+                std::cout << "Restart !" << std::endl;
+
+            cmaStrategy->capture_best_solution(best_run);
+
+            if(incrPop)
+                cmaStrategy->lambda_inc();
+
+            cmaStrategy->reset_search_state();
+            if(!elitist_restart){
+                float max_weight = settings::getParameter<settings::Float>(parameters,"#MaxWeight").value;
+                cmaStrategy->get_parameters().set_x0(-max_weight,max_weight);
+            }
+        }
+}
+
+void NIPES::modifyMaxEvalTime_iteration()
+{
+        static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
+        static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
+        static const double minEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
+        static const double constantmodifyMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#constantmodifyMaxEvalTime").value;
+        double progress = (double) numberEvaluation / (double) maxNbrEval;
+        // std::cout << "progress: " << progress << std::endl;
+        // std::cout << "(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) = (" << progress << "," << constantmodifyMaxEvalTime << "," << (double) (maxEvalTime - minEvalTime) << ")" << std::endl;
+        // std::cout << "get_adjusted_runtime()" << get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) << std::endl;
+        currentMaxEvalTime = minEvalTime + get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime));
+}
+
+void NIPES::print_fitness_iteration()
+{
+    for (const auto &ind : population)
+    {
+        double fitness;
+        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
+
+        if (fitness > best_fitness)
+        {
+            best_fitness = fitness;
+        }
+        std::cout << "(fitness envType0, fitness envType1) = ("
+                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[0]
+                  << ","
+                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[1]
+                  << ")"
+                  << std::endl;
+        sw.tic();
+    }
+}
+
+std::string NIPES::compute_population_genome_hash()
+{
+    std::ostringstream strs;
+    // strs << std::setprecision(0);
+    for (const auto &ind : population)
+    {
+        auto v = std::dynamic_pointer_cast<NNParamGenome>(ind->get_ctrl_genome())->get_full_genome();
+        long unsigned int num = static_cast<long unsigned int> (average(v) * 1000000.0) % 89L;
+        num += 10L;
+        strs << num;
+    }
+    std::string str = strs.str();
+    return str;
+}
+
+void NIPES::epoch(){
+
+
     double energy_budget = settings::getParameter<settings::Double>(parameters,"#energyBudget").value;
     bool energy_reduction = settings::getParameter<settings::Boolean>(parameters,"#energyReduction").value;
 
@@ -181,143 +308,75 @@ void NIPES::epoch(){
     }
 
 
-    // Write results experiment "measure_ranks"
+
+   // Write results experiment "measure_ranks"
     if (subexperiment_name == "measure_ranks")
-    {
-        std::vector<double> f_scores(population.size());
-        std::vector<int> ranks(population.size());
-        f_scores.resize(population.size());
-        for (size_t i = 0; i < population.size(); i++)
-        {   
-            auto ind = population[i];
-            double fitness;
-            fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
-            f_scores[i] = fitness;
-        }
-        std::cout << "----" << std::endl;
-        PrintArray(f_scores.data(), population.size());
-        PrintArray(ranks.data(), population.size());
-        compute_order_from_double_to_int(f_scores.data(),population.size(),ranks.data(),false);
-
-        PrintArray(f_scores.data(), population.size());
-        PrintArray(ranks.data(), population.size());
-        std::cout << "----" << std::endl;
-
-
-        std::stringstream res_to_write;  
-        res_to_write << std::setprecision(28);
-        res_to_write << settings::getParameter<settings::String>(parameters,"#preTextInResultFile").value << ",";
-        res_to_write << currentMaxEvalTime << ",";
-        res_to_write << numberEvaluation << ",";
-        res_to_write << "(";
-        res_to_write << iterable_to_str(ranks.begin(), ranks.end());
-        res_to_write << "),(";
-        res_to_write << iterable_to_str(f_scores.begin(), f_scores.end());
-        res_to_write << ")\n";
-        append_line_to_file(result_filename,res_to_write.str());
+    {   
+        #define N_LINSPACE_SAMPLES_RUNTIME 4
+        double proportion = (double) 1 / (double) (N_LINSPACE_SAMPLES_RUNTIME+1) *  (double) (1 + n_iterations_isReevaluating);
+        std::cout << "proportion: " << proportion << std::endl;
+        write_measure_ranks_to_results();
+        currentMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value * proportion;
+        isReevaluating = n_iterations_isReevaluating <= N_LINSPACE_SAMPLES_RUNTIME;      
     }
 
 
     static const bool modifyMaxEvalTime = settings::getParameter<settings::Boolean>(parameters,"#modifyMaxEvalTime").value;
-    if (modifyMaxEvalTime)
+    if (modifyMaxEvalTime && subexperiment_name != "measure_ranks")
     {
-        static const int maxNbrEval = settings::getParameter<settings::Integer>(parameters,"#maxNbrEval").value;
-        static const double maxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value;
-        static const double minEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#minEvalTime").value;
-        static const double constantmodifyMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#constantmodifyMaxEvalTime").value;
-        double progress = (double) numberEvaluation / (double) maxNbrEval;
-        // std::cout << "progress: " << progress << std::endl;
-        // std::cout << "(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) = (" << progress << "," << constantmodifyMaxEvalTime << "," << (double) (maxEvalTime - minEvalTime) << ")" << std::endl;
-        // std::cout << "get_adjusted_runtime()" << get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime)) << std::endl;
-        currentMaxEvalTime = minEvalTime + get_adjusted_runtime(progress, constantmodifyMaxEvalTime, (double) (maxEvalTime - minEvalTime));
+        modifyMaxEvalTime_iteration();
     }
 
+    print_fitness_iteration();
 
-
-
-
-    for (const auto &ind : population)
+    
+    if (isReevaluating)
     {
-        double fitness;
-        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
-
-        if (fitness > best_fitness)
-        {
-            best_fitness = fitness;
-        }
-        std::cout << "(fitness envType0, fitness envType1) = ("
-                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[0]
-                  << ","
-                  << std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[1]
-                  << ")"
-                  << std::endl;
-        sw.tic();
+        numberEvaluation -= population.size();
+        n_reevaluations += population.size();
+        n_iterations_isReevaluating++;
+        generation--;
+    }
+    else
+    {
+        n_reevaluations = 0;
+        n_iterations_isReevaluating = 0;
+        cma_iteration();
     }
 
-    /**/
-
-    std::vector<IPOPCMAStrategy::individual_t> pop;
-    for(const auto &ind : population){
-        IPOPCMAStrategy::individual_t cma_ind;
-        cma_ind.genome = std::dynamic_pointer_cast<NNParamGenome>(ind->get_ctrl_genome())->get_full_genome();
-        cma_ind.descriptor = std::dynamic_pointer_cast<sim::NN2Individual>(ind)->get_final_position();
-        cma_ind.objectives = std::dynamic_pointer_cast<sim::NN2Individual>(ind)->getObjectives();
-        pop.push_back(cma_ind);
-    }
-
-    cmaStrategy->set_population(pop);
-    cmaStrategy->eval();
-    cmaStrategy->tell();
-    bool stop = cmaStrategy->stop();
-//    if(cmaStrategy->have_reached_ftarget()){
-//        _is_finish = true;
-////        return;
-//    }
-
-    if(withRestart && stop){
-        if(verbose)
-            std::cout << "Restart !" << std::endl;
-
-        cmaStrategy->capture_best_solution(best_run);
-
-        if(incrPop)
-            cmaStrategy->lambda_inc();
-
-        cmaStrategy->reset_search_state();
-        if(!elitist_restart){
-            float max_weight = settings::getParameter<settings::Float>(parameters,"#MaxWeight").value;
-            cmaStrategy->get_parameters().set_x0(-max_weight,max_weight);
-        }
-    }
 }
 
 void NIPES::init_next_pop(){
-    int pop_size = cmaStrategy->get_parameters().lambda();
 
-    dMat new_samples = cmaStrategy->ask();
+    if (!isReevaluating)
+    {
+        int pop_size = cmaStrategy->get_parameters().lambda();
 
-    int nbr_weights = std::dynamic_pointer_cast<NNParamGenome>(population[0]->get_ctrl_genome())->get_weights().size();
-    int nbr_bias = std::dynamic_pointer_cast<NNParamGenome>(population[0]->get_ctrl_genome())->get_biases().size();
+        dMat new_samples = cmaStrategy->ask();
 
-    std::vector<double> weights(nbr_weights);
-    std::vector<double> biases(nbr_bias);
+        int nbr_weights = std::dynamic_pointer_cast<NNParamGenome>(population[0]->get_ctrl_genome())->get_weights().size();
+        int nbr_bias = std::dynamic_pointer_cast<NNParamGenome>(population[0]->get_ctrl_genome())->get_biases().size();
 
-    population.clear();
-    for(int i = 0; i < pop_size ; i++){
+        std::vector<double> weights(nbr_weights);
+        std::vector<double> biases(nbr_bias);
 
-        for(int j = 0; j < nbr_weights; j++)
-            weights[j] = new_samples(j,i);
-        for(int j = nbr_weights; j < nbr_weights+nbr_bias; j++)
-            biases[j-nbr_weights] = new_samples(j,i);
+        population.clear();
+        for(int i = 0; i < pop_size ; i++){
 
-        EmptyGenome::Ptr morph_gen(new EmptyGenome);
-        NNParamGenome::Ptr ctrl_gen(new NNParamGenome);
-        ctrl_gen->set_weights(weights);
-        ctrl_gen->set_biases(biases);
-        Individual::Ptr ind(new NIPESIndividual(morph_gen,ctrl_gen));
-        ind->set_parameters(parameters);
-        ind->set_randNum(randomNum);
-        population.push_back(ind);
+            for(int j = 0; j < nbr_weights; j++)
+                weights[j] = new_samples(j,i);
+            for(int j = nbr_weights; j < nbr_weights+nbr_bias; j++)
+                biases[j-nbr_weights] = new_samples(j,i);
+
+            EmptyGenome::Ptr morph_gen(new EmptyGenome);
+            NNParamGenome::Ptr ctrl_gen(new NNParamGenome);
+            ctrl_gen->set_weights(weights);
+            ctrl_gen->set_biases(biases);
+            Individual::Ptr ind(new NIPESIndividual(morph_gen,ctrl_gen));
+            ind->set_parameters(parameters);
+            ind->set_randNum(randomNum);
+            population.push_back(ind);
+        }
     }
 }
 
@@ -331,7 +390,6 @@ bool NIPES::update(const Environment::Ptr & env){
     std::cout << "update() " << sw.toc() << std::endl;
     sw.tic();
     numberEvaluation++;
-    reevaluated++;
     if(simulator_side){
         Individual::Ptr ind = population[currentIndIndex];
         std::dynamic_pointer_cast<NIPESIndividual>(ind)->set_final_position(env->get_final_position());
@@ -343,13 +401,6 @@ bool NIPES::update(const Environment::Ptr & env){
     }
     sw.tic();
 
-
-
-//    int nbReEval = settings::getParameter<settings::Integer>(parameters,"#numberOfReEvaluation").value;
-//    if(reevaluated < nbReEval)
-//        return false;
-
-//    reevaluated = 0;
     return true;
 }
 

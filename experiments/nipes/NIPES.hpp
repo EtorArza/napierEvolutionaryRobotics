@@ -62,6 +62,13 @@ public:
 
     bool is_finish() override;
     bool finish_eval(const Environment::Ptr &env) override;
+    void write_measure_ranks_to_results();
+    void cma_iteration();
+    void modifyMaxEvalTime_iteration();
+    void print_fitness_iteration();
+    std::string compute_population_genome_hash();
+
+
 
     bool restarted(){return !cmaStrategy->log_stopping_criterias.empty();}
     std::string pop_stopping_criterias(){
@@ -76,7 +83,8 @@ protected:
     cma::CMASolutions best_run;
     bool _is_finish = false;
     std::vector<Eigen::VectorXd> archive;
-    int reevaluated = 0;
+    int n_reevaluations = 0;
+    int n_iterations_isReevaluating = 0;
     float currentMaxEvalTime = 0; 
 };
 

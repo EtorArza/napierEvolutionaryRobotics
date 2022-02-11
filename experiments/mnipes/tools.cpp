@@ -68,3 +68,11 @@ void compute_order_from_double_to_int(double* v, int len, int* order_res, bool r
     }
     delete[] temp;
 }
+
+
+double average(std::vector<double> v)
+{
+    return accumulate( v.begin(), v.end(), 0.0)/v.size();              
+
+}
+

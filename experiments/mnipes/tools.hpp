@@ -9,7 +9,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-
+#include <vector>
 
 class stopwatch
 {
@@ -65,6 +65,6 @@ void PrintArray(T *array, int length)
 void compute_order_from_double_to_int(double* v, int len, int* order_res, bool reverse);
 
 
-
+double average(std::vector<double> v);
 
 #endif
