@@ -46,6 +46,15 @@ def update_parameter(parameter_file, parameter_name, parameter_value):
 
 
 
+def mass_update_parameters(parameter_file, string_with_parmeter_file_lines):
+    line_list = string_with_parmeter_file_lines.split("\n")
+    for line in line_list:
+        if len(line)!=0 and "#" in line: 
+            parameter_name, _, parameter_value = line.split(",")
+            parameter_name = parameter_name.strip("#")
+            update_parameter(parameter_file, parameter_name, parameter_value)
+
+
 
 if __name__ == "__main__":
     update_param_from_argv(sys.argv[1:])
