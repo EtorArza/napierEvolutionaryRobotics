@@ -20,7 +20,6 @@ Eigen::VectorXd NIPESIndividual::descriptor()
 void NIPES::init(){
     total_time_sw.tic();
     subexperiment_name = settings::getParameter<settings::String>(parameters,"#subexperimentName").value;
-    envType = settings::getParameter<settings::Integer>(parameters, "#envType").value;
 
     if (
         subexperiment_name != "measure_ranks" && 
@@ -140,7 +139,7 @@ void NIPES::write_measure_ranks_to_results()
     {   
         auto ind = population[i];
         double fitness;
-        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
+        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[0];
         f_scores[i] = fitness;
     }
     std::cout << "----" << std::endl;
@@ -227,9 +226,9 @@ void NIPES::print_fitness_iteration()
 {
     for (const auto &ind : population)
     {
-        std::cout << "objectives: " << iterable_to_str(std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives().begin(), std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives().end()) << std::endl;
+        std::cout << "objective, novelty: " << iterable_to_str(std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives().begin(), std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives().end()) << std::endl;
         double fitness;
-        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[envType];
+        fitness = std::dynamic_pointer_cast<NIPESIndividual>(ind)->getObjectives()[0];
 
         if (fitness > best_fitness)
         {

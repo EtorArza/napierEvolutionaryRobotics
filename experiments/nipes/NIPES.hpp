@@ -91,7 +91,6 @@ protected:
     stopwatch sw = stopwatch();
     stopwatch total_time_sw = stopwatch();
     double best_fitness = -__DBL_MAX__;
-    int envType;
     bool isReevaluating=false;
 
     std::string result_filename;

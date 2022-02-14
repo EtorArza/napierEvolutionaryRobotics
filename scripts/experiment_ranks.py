@@ -53,7 +53,7 @@ parameter_text = """
 #noiseLevel,double,0.
 #maxVelocity,double,10.
 
-#envType,int,0
+#envType,int,1
 #arenaSize,double,2.
 #target_x,double,0.75
 #target_y,double,0.75
