@@ -133,7 +133,7 @@ void NIPES::init(){
 void NIPES::write_measure_ranks_to_results()
 {
     std::vector<double> f_scores(population.size());
-    std::vector<int> ranks(population.size());
+    std::vector<double> ranks(population.size());
     f_scores.resize(population.size());
     for (size_t i = 0; i < population.size(); i++)
     {   
@@ -145,7 +145,7 @@ void NIPES::write_measure_ranks_to_results()
     std::cout << "----" << std::endl;
     PrintArray(f_scores.data(), population.size());
     PrintArray(ranks.data(), population.size());
-    compute_order_from_double_to_int(f_scores.data(),population.size(),ranks.data(),false);
+    compute_order_from_double_to_double(f_scores.data(),population.size(),ranks.data(), false, true);
 
     PrintArray(f_scores.data(), population.size());
     PrintArray(ranks.data(), population.size());
@@ -166,6 +166,48 @@ void NIPES::write_measure_ranks_to_results()
     res_to_write << "\n";
     append_line_to_file(result_filename,res_to_write.str());
 }
+
+
+void NIPES::updateNoveltyEnergybudgetArchive()
+{
+    double energy_budget = settings::getParameter<settings::Double>(parameters,"#energyBudget").value;
+    bool energy_reduction = settings::getParameter<settings::Boolean>(parameters,"#energyReduction").value;
+    /**Energy Cost**/
+    if(energy_reduction){
+        for(const auto &ind : population){
+            double ec = std::dynamic_pointer_cast<sim::NN2Individual>(ind)->get_energy_cost();
+            if(ec > energy_budget) ec = energy_budget;
+            std::dynamic_pointer_cast<sim::NN2Individual>(ind)->addObjective(1 - ec/energy_budget);
+        }
+    }
+
+    /** NOVELTY **/
+    if(settings::getParameter<settings::Double>(parameters,"#noveltyRatio").value > 0.){
+        if(Novelty::k_value >= population.size())
+            Novelty::k_value = population.size()/2;
+        else Novelty::k_value = settings::getParameter<settings::Integer>(parameters,"#kValue").value;
+
+        std::vector<Eigen::VectorXd> pop_desc;
+        for(const auto& ind : population)
+            pop_desc.push_back(ind->descriptor());
+        //compute novelty
+        for(const auto& ind : population){
+            Eigen::VectorXd ind_desc = ind->descriptor();
+            double ind_nov = Novelty::sparseness(Novelty::distances(ind_desc,archive,pop_desc));
+            std::dynamic_pointer_cast<sim::NN2Individual>(ind)->addObjective(ind_nov);
+        }
+
+        //update archive
+        for(const auto& ind : population){
+            Eigen::VectorXd ind_desc = ind->descriptor();
+            double ind_nov = ind->getObjectives().back();
+            Novelty::update_archive(ind_desc,ind_nov,archive,randomNum);
+        }
+    }
+
+}
+
+
 
 void NIPES::cma_iteration(){
 
@@ -255,53 +297,19 @@ std::string NIPES::compute_population_genome_hash()
 void NIPES::epoch(){
 
 
-    double energy_budget = settings::getParameter<settings::Double>(parameters,"#energyBudget").value;
-    bool energy_reduction = settings::getParameter<settings::Boolean>(parameters,"#energyReduction").value;
-
-    /**Energy Cost**/
-    if(energy_reduction){
-        for(const auto &ind : population){
-            double ec = std::dynamic_pointer_cast<sim::NN2Individual>(ind)->get_energy_cost();
-            if(ec > energy_budget) ec = energy_budget;
-            std::dynamic_pointer_cast<sim::NN2Individual>(ind)->addObjective(1 - ec/energy_budget);
-        }
-    }
-
-    /** NOVELTY **/
-    if(settings::getParameter<settings::Double>(parameters,"#noveltyRatio").value > 0.){
-        if(Novelty::k_value >= population.size())
-            Novelty::k_value = population.size()/2;
-        else Novelty::k_value = settings::getParameter<settings::Integer>(parameters,"#kValue").value;
-
-        std::vector<Eigen::VectorXd> pop_desc;
-        for(const auto& ind : population)
-            pop_desc.push_back(ind->descriptor());
-        //compute novelty
-        for(const auto& ind : population){
-            Eigen::VectorXd ind_desc = ind->descriptor();
-            double ind_nov = Novelty::sparseness(Novelty::distances(ind_desc,archive,pop_desc));
-            std::dynamic_pointer_cast<sim::NN2Individual>(ind)->addObjective(ind_nov);
-        }
-
-        //update archive
-        for(const auto& ind : population){
-            Eigen::VectorXd ind_desc = ind->descriptor();
-            double ind_nov = ind->getObjectives().back();
-            Novelty::update_archive(ind_desc,ind_nov,archive,randomNum);
-        }
-    }
-
-
-
    // Write results experiment "measure_ranks"
     if (subexperiment_name == "measure_ranks")
     {   
-        #define N_LINSPACE_SAMPLES_RUNTIME 4
-        double proportion = (double) 1 / (double) (N_LINSPACE_SAMPLES_RUNTIME+1) *  (double) (1 + n_iterations_isReevaluating);
-        std::cout << "proportion: " << proportion << std::endl;
-        write_measure_ranks_to_results();
-        currentMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value * proportion;
-        isReevaluating = n_iterations_isReevaluating <= N_LINSPACE_SAMPLES_RUNTIME;      
+        const int REEVALUATE_EVERY_N_GENS = 3;
+        const int N_LINSPACE_SAMPLES_RUNTIME = 4;
+        if (generation % REEVALUATE_EVERY_N_GENS == 0)
+        {
+            double proportion = (double) 1 / (double) (N_LINSPACE_SAMPLES_RUNTIME+1) *  (double) (1 + n_iterations_isReevaluating);
+            std::cout << "proportion: " << proportion << std::endl;
+            write_measure_ranks_to_results();
+            currentMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value * proportion;
+            isReevaluating = n_iterations_isReevaluating <= N_LINSPACE_SAMPLES_RUNTIME;
+        }
     }
 
 
@@ -310,8 +318,6 @@ void NIPES::epoch(){
     {
         modifyMaxEvalTime_iteration();
     }
-
-    print_fitness_iteration();
 
     
     if (isReevaluating)
@@ -325,8 +331,10 @@ void NIPES::epoch(){
     {
         n_reevaluations = 0;
         n_iterations_isReevaluating = 0;
+        updateNoveltyEnergybudgetArchive();
         cma_iteration();
     }
+    print_fitness_iteration();
 
 }
 

@@ -62,7 +62,17 @@ void PrintArray(T *array, int length)
     std::cout << " " << std::endl;
 }
 
+template <class A, class B>
+void multiply_array_with_value(A* array, B value, int len){
+    for (int i = 0; i < len; i++)
+    {
+        array[i] *= value;
+    }
+}
+
 void compute_order_from_double_to_int(double* v, int len, int* order_res, bool reverse);
+void compute_order_from_double_to_double(double* v, int len, double* order_res, bool reverse = false, bool respect_ties = false);
+bool are_doubles_equal(double x1, double x2);
 
 
 double average(std::vector<double> v);

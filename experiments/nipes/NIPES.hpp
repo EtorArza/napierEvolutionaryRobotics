@@ -64,6 +64,7 @@ public:
     bool is_finish() override;
     bool finish_eval(const Environment::Ptr &env) override;
     void write_measure_ranks_to_results();
+    void updateNoveltyEnergybudgetArchive();
     void cma_iteration();
     void modifyMaxEvalTime_iteration();
     void print_fitness_iteration();
