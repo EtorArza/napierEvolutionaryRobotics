@@ -151,6 +151,7 @@ void NIPES::write_measure_ranks_to_results()
     PrintArray(ranks.data(), population.size());
     std::cout << "----" << std::endl;
 
+    std::cout << "- Saving population " << compute_population_genome_hash() << std::endl;
 
     std::stringstream res_to_write;
     res_to_write << std::setprecision(28);
@@ -285,10 +286,7 @@ std::string NIPES::compute_population_genome_hash()
     // strs << std::setprecision(0);
     for (const auto &ind : population)
     {
-        auto v = std::dynamic_pointer_cast<NNParamGenome>(ind->get_ctrl_genome())->get_full_genome();
-        long unsigned int num = static_cast<long unsigned int> (average(v) * 1000000.0) % 89L;
-        num += 10L;
-        strs << num;
+        strs << "#" << getIndividualHash(ind);
     }
     std::string str = strs.str();
     return str;
@@ -296,7 +294,7 @@ std::string NIPES::compute_population_genome_hash()
 
 void NIPES::epoch(){
 
-
+    std::cout << "- epoch(), gen = " << generation << std::endl;
    // Write results experiment "measure_ranks"
     if (subexperiment_name == "measure_ranks")
     {   
@@ -309,6 +307,10 @@ void NIPES::epoch(){
             write_measure_ranks_to_results();
             currentMaxEvalTime = (double) settings::getParameter<settings::Float>(parameters,"#maxEvalTime").value * proportion;
             isReevaluating = n_iterations_isReevaluating <= N_LINSPACE_SAMPLES_RUNTIME;
+            if(isReevaluating)
+            {
+                std::cout << "- Reevaluating... " << std::endl;
+            }
         }
     }
 
@@ -322,14 +324,12 @@ void NIPES::epoch(){
     
     if (isReevaluating)
     {
+        set_generation(get_generation() - 1);
         numberEvaluation -= population.size();
-        n_reevaluations += population.size();
         n_iterations_isReevaluating++;
-        generation--;
     }
     else
     {
-        n_reevaluations = 0;
         n_iterations_isReevaluating = 0;
         updateNoveltyEnergybudgetArchive();
         cma_iteration();
@@ -377,6 +377,16 @@ void NIPES::setObjectives(size_t indIdx, const std::vector<double> &objectives){
 }
 
 
+std::string NIPES::getIndividualHash(Individual::Ptr ind)
+{
+    auto v = std::dynamic_pointer_cast<NNParamGenome>(ind->get_ctrl_genome())->get_full_genome();
+    long unsigned int num = static_cast<long unsigned int> (average(v) * 10000000000.0) % 890000L + 100000L;
+    std::stringstream ss;
+    ss << num;
+    return ss.str();
+}
+
+
 bool NIPES::update(const Environment::Ptr & env){
     endEvalTime = hr_clock::now();
     std::cout << "update() " << sw.toc() << std::endl;
@@ -384,6 +394,7 @@ bool NIPES::update(const Environment::Ptr & env){
     numberEvaluation++;
     if(simulator_side){
         Individual::Ptr ind = population[currentIndIndex];
+        std::cout << "- Evaluated genome with hash #" << getIndividualHash(ind) << std::endl;
         std::dynamic_pointer_cast<NIPESIndividual>(ind)->set_final_position(env->get_final_position());
         std::dynamic_pointer_cast<NIPESIndividual>(ind)->set_trajectory(env->get_trajectory());
         if(env->get_name() == "obstacle_avoidance"){

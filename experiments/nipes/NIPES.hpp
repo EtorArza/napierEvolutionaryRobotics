@@ -69,6 +69,7 @@ public:
     void modifyMaxEvalTime_iteration();
     void print_fitness_iteration();
     std::string compute_population_genome_hash();
+    std::string getIndividualHash(Individual::Ptr ind);
 
 
 
@@ -85,7 +86,6 @@ protected:
     cma::CMASolutions best_run;
     bool _is_finish = false;
     std::vector<Eigen::VectorXd> archive;
-    int n_reevaluations = 0;
     int n_iterations_isReevaluating = 0;
     float currentMaxEvalTime = 0; 
 
