@@ -4,14 +4,17 @@ def update_param_from_argv(argv):
     parameter_file = ''
     parameter_name = ''
     parameter_value = ''
+    updateOnlyPath=False
     try:
-        opts, args = getopt.getopt(argv,"h:f:n:v:",["file=","name=", "value="])
+        opts, args = getopt.getopt(argv,"h:f:n:v:",["file=","name=", "value=","updateOnlyPath"])
+        print(opts)
     except getopt.GetoptError:
-        print('test.py -f <parameter_file_path> -n <parameter_name> -v <new_parameter_value>')
+        print(f"Error in UpdateParameter.py. Some parameter was not recognized. argv = {argv} ")
+        print('UpdateParameter.py -f <parameter_file_path> -n <parameter_name> -v <new_parameter_value>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('test.py -f <parameter_file_path> -n <parameter_name> -v <new_parameter_value>')
+            print('UpdateParameter.py -f <parameter_file_path> -n <parameter_name> -v <new_parameter_value>')
             sys.exit()
         elif opt in ("-f", "--file"):
             parameter_file = arg
@@ -19,13 +22,18 @@ def update_param_from_argv(argv):
             parameter_name = arg
         elif opt in ("-v", "--value"):
             parameter_value = arg
+        elif opt == "--updateOnlyPath":
+            updateOnlyPath = True
+        else: 
+            raise ValueError(f"Argument {opt} not recognized.")
+
     if len(parameter_file) == 0 or len(parameter_name) == 0 or len(parameter_value) == 0:
         print("Parameters -f -n and -v are required. Usage:")
-        print('test.py -f <parameter_file_path> -n <parameter_name> -v <new_parameter_value>')
+        print('UpdateParameter.py -f <parameter_file_path> -n <parameter_name> -v <new_parameter_value>')
         exit(1)
-    update_parameter(parameter_file, parameter_name, parameter_value)
+    update_parameter(parameter_file, parameter_name, parameter_value, updateOnlyPath)
 
-def update_parameter(parameter_file, parameter_name, parameter_value):
+def update_parameter(parameter_file, parameter_name, parameter_value, updateOnlyPath=False):
     assert not (parameter_file is None or len(parameter_file) == 0)
     assert not (parameter_name is None or len(parameter_name) == 0)
     assert not (parameter_value is None or len(parameter_value) == 0)
@@ -35,7 +43,12 @@ def update_parameter(parameter_file, parameter_name, parameter_value):
     for idx, line in enumerate(lines):
         if ("#"+parameter_name) == line.split(",")[0]:
             split_line = line.split(",")
-            split_line[2] = parameter_value + "\n"
+            if updateOnlyPath:
+                if parameter_value[-1] != "/":
+                    raise ValueError(r"parameter_value should be a directory and end with \ when updateOnlyPath=True. Instead, parameter_value = "+ f"{parameter_value}")
+                split_line[2] = parameter_value + split_line[2].split(r"/")[-1]
+            else:
+                split_line[2] = parameter_value + "\n"
             lines[idx] = ",".join(split_line)
             with open(parameter_file, "w") as f:
                 f.writelines(lines)

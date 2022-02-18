@@ -1,7 +1,7 @@
 #experimentName,string,nipes
 #subexperimentName,string,measure_ranks
-#preTextInResultFile,string,yolo
-#resultFile,string,result.txt
+#preTextInResultFile,string,ftest5
+#resultFile,string,result_test_cluster.txt
 
 
 #expPluginName,string,/usr/local/lib/libNIPES.so
@@ -27,15 +27,15 @@
 #instanceType,int,0
 #killWhenNotConnected,bool,0
 #shouldReopenConnections,bool,0
-#seed,int,6
+#seed,int,7
 
-#populationSize,int,4
-#maxEvalTime,float,5.0
-#maxNbrEval,int,16
+#populationSize,int,20
+#maxEvalTime,float,4.0
+#maxNbrEval,int,100
 #timeStep,float,0.1
 
 #modifyMaxEvalTime,bool,0
-#constantmodifyMaxEvalTime,float,1.0
+#constantmodifyMaxEvalTime,float,0.0
 #minEvalTime,float,2.0
 
 #noiseLevel,double,0.
