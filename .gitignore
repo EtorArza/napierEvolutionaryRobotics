@@ -4,3 +4,5 @@ logs/*
 .vscode
 evolutionary_robotics_framework
 __pycache__
+connet_napier_hpc.sh
+copy_files_to_napier_hpc.sh
